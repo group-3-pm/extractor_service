@@ -1,1 +1,1 @@
-from . import convertor
+from . import pdf_convertor
