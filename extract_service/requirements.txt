@@ -3,3 +3,4 @@ torchvision
 torchaudio
 marker-pdf
 pika
+docx2md

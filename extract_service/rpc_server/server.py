@@ -2,7 +2,7 @@ import json
 from typing import IO
 import pika
 
-from ..extractor.pdf_convertor.convert import custom_convert_pdf
+from ..extractor.pdf import convert_pdf 
 from .config import rpc_cfg
 
 connection = pika.BlockingConnection(
@@ -22,7 +22,7 @@ channel.queue_declare(queue=rpc_cfg.queue)
 
 def extract_text(file: IO, file_type: str):
     if file_type == 'pdf':
-        return custom_convert_pdf(file.name, [])
+        return convert_pdf(file.name)
     if file_type == 'docx':
         return 'docx'
     return 'other'
