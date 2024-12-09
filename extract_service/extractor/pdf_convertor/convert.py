@@ -2,7 +2,6 @@ import warnings
 
 from marker.pdf.images import render_image
 
-
 warnings.filterwarnings("ignore", category=UserWarning) # Filter torch pytree user warnings
 
 import os
@@ -34,10 +33,9 @@ from marker.images.extract import extract_images
 from marker.images.save import images_to_dict
 from marker.cleaners.toc import compute_toc
 
-from typing import Generator, List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional
 from marker.settings import settings
 
-from .tables import format_table_in_page
 
 def custom_convert_pdf(
         fname: str,
@@ -48,7 +46,9 @@ def custom_convert_pdf(
         langs: Optional[List[str]] = None,
         batch_multiplier: int = 1,
         ocr_all_pages: bool = False
-) -> Generator[Tuple[str, Dict[str, Image.Image], Dict, Dict, int], None, None]:
+) -> Tuple[str, Dict[str, Image.Image], Dict, Dict, int]:
+    message = "success"
+
     ocr_all_pages = ocr_all_pages or settings.OCR_ALL_PAGES
 
     if metadata:
@@ -99,13 +99,13 @@ def custom_convert_pdf(
         surya_detection([lowres_image], [page], detection_model, batch_multiplier=batch_multiplier)
 
         # OCR for the page
-        single_page, ocr_stats = run_ocr(doc, [page], langs, ocr_model, batch_multiplier=batch_multiplier, ocr_all_pages=ocr_all_pages)
+        [page], ocr_stats = run_ocr(doc, [page], langs, ocr_model, batch_multiplier=batch_multiplier, ocr_all_pages=ocr_all_pages)
         flush_cuda_memory()
         out_meta["ocr_stats"] = ocr_stats
 
         if len([b for b in page.blocks]) == 0:
-            print(f"Could not extract any text blocks for page {pnum + 1} in {fname}")
-            yield "", {}, out_meta
+            message = f"Could not extract any text blocks for page {pnum + 1} in {fname}"
+            yield "", {}, out_meta, [], pnum, message
             continue
 
         surya_layout([lowres_image], [page], layout_model, batch_multiplier=batch_multiplier)
@@ -173,4 +173,4 @@ def custom_convert_pdf(
 
         doc_images = images_to_dict([page])
 
-        yield full_text, doc_images, out_meta, table_data, pnum
+        yield full_text, doc_images, out_meta, table_data, pnum, message

@@ -8,6 +8,5 @@ class RpcConfig:
         self.port = os.getenv('RPC_PORT')   
         self.user = os.getenv('RPC_USER')
         self.password = os.getenv('RPC_PASSWORD')
-        self.queue = os.getenv('RPC_QUEUE')
     
 rpc_cfg = RpcConfig()

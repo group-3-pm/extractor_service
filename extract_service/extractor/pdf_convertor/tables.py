@@ -128,10 +128,7 @@ def format_table_in_page(page: Page, doc: PdfDocument, fname: str, detection_mod
         insert_point = min(insert_point, len(new_page_blocks))
         new_page_blocks.insert(insert_point, table_block)
         table_count += 1
-    table_data = {
-        "page_number": pnum,
-        "tables": page_table_data
-    }
+    table_data = page_table_data
 
     # Update page blocks with new content
     page.blocks = new_page_blocks
