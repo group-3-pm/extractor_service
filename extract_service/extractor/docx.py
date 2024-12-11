@@ -1,10 +1,11 @@
 import os
+import json
 from docx2md.docxfile import DocxFile
 from docx2md.converter import Converter
 from docx2md.docxmedia import DocxMedia
 
 class DocxToMarkdown:
-    def __init__(self, use_md_table=False, debug=False):
+    def __init__(self, use_md_table=True, debug=False):
         self.use_md_table = use_md_table
         self.debug = debug
 
@@ -23,8 +24,9 @@ class DocxToMarkdown:
         # Convert to Markdown
         media = DocxMedia(docx)
         md_text = self._convert(docx, target_dir, media)
-        self._save_md(dst, md_text)
+        # self._save_md(dst, md_text)
         
+        self._save_json(dst, md_text)
         # Save media files
         media.save(target_dir)
 
@@ -53,5 +55,16 @@ class DocxToMarkdown:
         return converter.convert()
 
     def _save_md(self, file, text):
+        if isinstance(text, list):
+            # Trích xuất văn bản từ các trang (giả sử mỗi phần tử là một dict với key 'text')
+            text = "\n\n---PAGE BREAK Test---\n\n".join([page['images'] for page in text])  # Kết hợp văn bản của các trang
         with open(file, "w", encoding="utf-8") as f:
             f.write(text)
+
+    def _save_json(self, file, data):
+            """Save data as a JSON file."""
+            with open(file, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)  # `indent=4` to format the JSON
+if __name__ == "__main__":
+    converter = DocxToMarkdown()
+    converter.convert("test.docx", "test.json")
