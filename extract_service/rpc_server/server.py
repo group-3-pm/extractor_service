@@ -48,6 +48,14 @@ def on_request(ch, method, properties, body, file_type='pdf'):
             body=json.dumps(page)
         )
         print(f"send page with message {page.get('message')}")
+    ch.basic_publish(
+        exchange='',
+        routing_key=properties.reply_to,
+        properties=pika.BasicProperties(
+            correlation_id=properties.correlation_id
+        ),
+        body=json.dumps({'message': 'eof'})
+    )
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def func_on_queue(file_type='pdf'):
