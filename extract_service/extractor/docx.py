@@ -1,7 +1,7 @@
 import os
 import json
 from docx2md.docxfile import DocxFile
-from docx2md.converter import Converter
+from extractor.doc_convertor.convert import Converter
 from docx2md.docxmedia import DocxMedia
 
 class DocxToMarkdown:
