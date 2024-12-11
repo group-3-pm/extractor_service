@@ -33,9 +33,10 @@ from marker.images.extract import extract_images
 from marker.images.save import images_to_dict
 from marker.cleaners.toc import compute_toc
 
-from typing import List, Dict, Tuple, Optional
+from typing import Generator, List, Dict, Tuple, Optional
 from marker.settings import settings
 
+from .tables import format_table_in_page
 
 def custom_convert_pdf(
         fname: str,
@@ -46,7 +47,7 @@ def custom_convert_pdf(
         langs: Optional[List[str]] = None,
         batch_multiplier: int = 1,
         ocr_all_pages: bool = False
-) -> Tuple[str, Dict[str, Image.Image], Dict, Dict, int]:
+) -> Generator[Tuple[str, Dict[str, Image.Image], Dict, Dict, int], None, None]:
     message = "success"
 
     ocr_all_pages = ocr_all_pages or settings.OCR_ALL_PAGES

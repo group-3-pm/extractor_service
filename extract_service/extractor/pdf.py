@@ -14,7 +14,7 @@ import pprint
 
 def load_models():
     global model_lst
-    if os.getenv("MOCK"):
+    if os.getenv("MOCK") == "1":
       model_lst = []
     else:
       model_lst = load_all_models()
