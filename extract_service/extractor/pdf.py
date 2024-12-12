@@ -12,12 +12,15 @@ from .pdf_convertor.convert import custom_convert_pdf
 
 import pprint
 
+model_lst = []
+
 def load_models():
     global model_lst
     if os.getenv("MOCK") == "1":
       model_lst = []
     else:
-      model_lst = load_all_models()
+      if len(model_lst)==0:
+        model_lst = load_all_models()
     return model_lst
 
 def convert_image_to_base64(image):

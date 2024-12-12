@@ -12,7 +12,6 @@ import pypdfium2 as pdfium # Needs to be at the top to avoid warnings
 from PIL import Image
 
 from marker.utils import flush_cuda_memory
-from marker.tables.table import format_tables
 from marker.debug.data import dump_bbox_debug_data, draw_page_debug_images
 from marker.layout.layout import surya_layout, annotate_block_types
 from marker.layout.order import surya_order, sort_blocks_in_reading_order
