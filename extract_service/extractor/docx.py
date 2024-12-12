@@ -1,5 +1,7 @@
+import io
 import os
 import json
+import traceback
 from docx2md.docxfile import DocxFile
 from .doc_convertor.convert import Converter
 from docx2md.docxmedia import DocxMedia
@@ -30,10 +32,25 @@ class DocxToMarkdown:
         # Save media files
         media.save(target_dir)
 
+    def yield_convert(self, src):
+        docx = self._create_docx(src)
+        
+        # Convert to Markdown
+        media = DocxMedia(docx)
+        for page in self._yield_convert(docx, media):
+            yield {"page": page, "pnum": page["page"]}
+        pass
+
+    def _yield_convert(self, docx, media):
+        xml_text = docx.document()
+        converter = Converter(xml_text, media, self.use_md_table)
+        return converter.convert()
+    
     def _create_docx(self, file):
         try:
             return DocxFile(file)
         except Exception as e:
+            traceback.print_exc()
             raise RuntimeError(f"Error loading DOCX file: {e}")
     
     def _check_target_dir(self, file):
@@ -65,6 +82,24 @@ class DocxToMarkdown:
             """Save data as a JSON file."""
             with open(file, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)  # `indent=4` to format the JSON
-if __name__ == "__main__":
+
+def convert_docx_to_md(src):
+    """Convert a DOCX file to Markdown."""
     converter = DocxToMarkdown()
-    converter.convert("test.docx", "test.json")
+    return converter.yield_convert(src)
+
+if __name__ == "__main__":
+    with open("test.docx", "rb") as f:
+        bytes = f.read()
+
+    temp_file = "temp.docx"
+    with open(temp_file, "wb") as f:
+        f.write(bytes)
+    try:
+        for page in convert_docx_to_md(temp_file):
+            print(page)
+    except Exception as e:
+        print(e)
+    finally:
+        if os.path.exists(temp_file):
+            os.remove(temp_file)

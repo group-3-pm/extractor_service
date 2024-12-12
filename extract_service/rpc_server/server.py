@@ -4,6 +4,8 @@ import time
 from typing import IO
 import pika
 
+from ..extractor.docx import convert_docx_to_md
+
 from ..extractor.pdf import convert_pdf
 from .config import rpc_cfg
 
@@ -23,16 +25,20 @@ channel = connection.channel()
 channel.queue_declare(queue='pdf')
 channel.queue_declare(queue='docx')
 
-def extract_text(file: IO, file_type: str):
+def extract_text(file: bytes, file_type: str):
     if file_type == 'pdf':
+        file = io.BytesIO(file)
         return convert_pdf(file)
     if file_type == 'docx':
-        return 'docx'
-    return 'other'
+        tempfile = "temp.docx"
+        with open(tempfile, 'wb') as f:
+            f.write(file)
+        return convert_docx_to_md(tempfile)
+    return [{"message": "Invalid file type"}]
 
 
 def on_request(ch, method, properties, body, file_type='pdf'):
-    request = io.BytesIO(body)
+    request = body
     print(f'Received request for {file_type}')
     try:
         response = extract_text(request, file_type)

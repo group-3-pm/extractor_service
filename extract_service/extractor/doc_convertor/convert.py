@@ -6,7 +6,7 @@ import base64
 
 from lxml import etree
 
-from . import utils
+from docx2md import utils
 class Page:
     def __init__(self, page_number, text, images=None, tables=None):
         self.page_number = page_number
@@ -48,10 +48,24 @@ class Converter:
             self.pages.append(self.create_page_data())
 
         return self.pages  # Return list of pages
+    
+    def yield_convert(self):
+        self.in_list = False
+        body = self.get_first_element(self.tree, "//body")
+        self.parse_node(self.current_page, body)
+
+        # Save the last page if there is remaining content
+        if self.current_page.tell():
+            page = self.create_page_data()
+            self.pages.append(page)
+            yield page
+        else:
+            yield {"message": "eof"}
+
 
     def create_page_data(self):
         return {
-            "page": len(self.pages) + 1,
+            "page": len(self.pages),
             "text": self.current_page.getvalue().strip(),
             "images": self.current_images,
             "tables": self.current_tables
@@ -266,8 +280,12 @@ class Converter:
         
         # Convert image to base64
         media_info = self.media[embed_id]
-        with open(media_info.path, "rb") as image_file:
-            encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+        # Read media binary data from the .docx file
+        media_data = self.media.docx.read(f"word/{media_info.path}")
+
+        # Convert binary data to Base64
+        encoded_image = base64.b64encode(media_data).decode("utf-8")
+
         image_data = {
             "name": os.path.basename(media_info.path),
             "content": encoded_image
