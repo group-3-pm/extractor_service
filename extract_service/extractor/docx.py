@@ -3,8 +3,9 @@ import os
 import json
 import traceback
 from docx2md.docxfile import DocxFile
-from .doc_convertor.convert import Converter
+from extractor.doc_convertor.convert import Converter
 from docx2md.docxmedia import DocxMedia
+import tempfile
 
 class DocxToMarkdown:
     def __init__(self, use_md_table=True, debug=False):
@@ -38,7 +39,7 @@ class DocxToMarkdown:
         # Convert to Markdown
         media = DocxMedia(docx)
         for page in self._yield_convert(docx, media):
-            yield {"page": page, "pnum": page["page"]}
+            yield {"page": page, "pnum": page["page"], "message": "success"}
         pass
 
     def _yield_convert(self, docx, media):
@@ -92,14 +93,16 @@ if __name__ == "__main__":
     with open("test.docx", "rb") as f:
         bytes = f.read()
 
-    temp_file = "temp.docx"
-    with open(temp_file, "wb") as f:
-        f.write(bytes)
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+        temp_file.write(bytes)
+        temp_file_path = temp_file.name
+
     try:
-        for page in convert_docx_to_md(temp_file):
+        for page in convert_docx_to_md(temp_file_path):
             print(page)
     except Exception as e:
         print(e)
     finally:
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)

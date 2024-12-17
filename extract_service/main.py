@@ -1,5 +1,5 @@
-from .extractor.pdf import load_models, model_lst
-from .rpc_server.server import start_server
+from extractor.pdf import load_models, model_lst
+from rpc_server.server import start_server
 import traceback
 
 def main():

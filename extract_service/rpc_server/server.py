@@ -1,13 +1,16 @@
 import io
 import json
+import os
+import tempfile
 import time
+import traceback
 from typing import IO
 import pika
 
-from ..extractor.docx import convert_docx_to_md
+from extractor.docx import convert_docx_to_md
 
-from ..extractor.pdf import convert_pdf
-from .config import rpc_cfg
+from extractor.pdf import convert_pdf
+from rpc_server.config import rpc_cfg
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(
@@ -30,10 +33,11 @@ def extract_text(file: bytes, file_type: str):
         file = io.BytesIO(file)
         return convert_pdf(file)
     if file_type == 'docx':
-        tempfile = "temp.docx"
-        with open(tempfile, 'wb') as f:
-            f.write(file)
-        return convert_docx_to_md(tempfile)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+            temp_file.write(file)
+            temp_file_path = temp_file.name
+        print(f"Temp file path: {temp_file_path}")
+        return convert_docx_to_md(temp_file_path)
     return [{"message": "Invalid file type"}]
 
 
@@ -43,7 +47,8 @@ def on_request(ch, method, properties, body, file_type='pdf'):
     try:
         response = extract_text(request, file_type)
     except Exception as e:
-        response = [{'messsage': str(e)}, {'message': 'eof'}]
+        response = [{'message': f"Failed to extract: {e}"}, {'message': 'eof'}]
+        traceback.print_exc()
     for page in response:
         ch.basic_publish(
             exchange='',

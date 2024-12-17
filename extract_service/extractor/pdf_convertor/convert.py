@@ -35,7 +35,7 @@ from marker.cleaners.toc import compute_toc
 from typing import Generator, List, Dict, Tuple, Optional
 from marker.settings import settings
 
-from .tables import format_table_in_page
+from extractor.pdf_convertor.tables import format_table_in_page
 
 def custom_convert_pdf(
         fname: str,

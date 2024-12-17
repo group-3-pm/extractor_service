@@ -1,5 +1,6 @@
 import json
 import os
+from re import S
 from typing import Dict, List
 import dotenv
 import base64
@@ -8,9 +9,7 @@ import io
 dotenv.load_dotenv()
 
 from marker.models import load_all_models
-from .pdf_convertor.convert import custom_convert_pdf
-
-import pprint
+from extractor.pdf_convertor.convert import custom_convert_pdf
 
 model_lst = []
 
